@@ -61,7 +61,7 @@ app.startup(function () {
   if (app.version() !== version) {
     app.timers.setTimeout(function () {
       app.tab.open(
-        'http://add0n.com/javascript-toggle.html?v=' + app.version() +
+        'http://add0n.com/javascript-toggler.html?v=' + app.version() +
         (version ? '&p=' + version + '&type=upgrade' : '&type=install')
       );
       config.welcome.version = app.version();

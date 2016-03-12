@@ -7,7 +7,7 @@
   "version": "0.1.0",
   "author": "Unknown",
   "main": "./lib/background.js",
-  "url": "http://add0n.com/javascript-toggle.html",
+  "url": "http://add0n.com/javascript-toggler.html",
   "permissions": {
     "private-browsing": true
   },

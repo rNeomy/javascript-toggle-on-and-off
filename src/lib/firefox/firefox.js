@@ -10,11 +10,11 @@ var self          = require('sdk/self'),
     timers        = require('sdk/timers'),
     unload        = require('sdk/system/unload'),
     buttons       = require('sdk/ui/button/action'),
-    {Cu}          = require('chrome'),
+    {Ci, Cc, Cu}  = require('chrome'),
     {on, off, once, emit} = require('sdk/event/core'),
     {all, defer, race, resolve}  = require('sdk/core/promise');
 
-var {WebRequest} = Cu.import('resource://gre/modules/WebRequest.jsm');
+//var {WebRequest} = Cu.import('resource://gre/modules/WebRequest.jsm');
 var {MatchPattern} = Cu.import('resource://gre/modules/MatchPattern.jsm');
 
 exports.globals = {
@@ -77,14 +77,7 @@ exports.tab = {
   open: (url) => tabs.open({
     url: url,
     inBackground: false
-  }),
-  list: function () {
-    let temp = [];
-    for each (var tab in tabs) {
-      temp.push(tab);
-    }
-    return Promise.resolve(temp);
-  }
+  })
 };
 
 exports.version = () => self.version;
@@ -112,4 +105,36 @@ unload.when(function () {
 });
 
 exports.MatchPattern = MatchPattern;
-exports.webRequest = WebRequest;
+// exports.webRequest = WebRequest;
+// exports.webRequest is temporary solution until WebRequest.JSM's setResponseHeader is landed
+exports.webRequest = (function () {
+  let observerService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+  let listener;
+  function observe (subject) {
+    let channel = subject.QueryInterface(Ci.nsIHttpChannel);
+    let loadInfo = channel.loadInfo;
+    if (loadInfo) {
+      let rawtype = loadInfo.externalContentPolicyType !== undefined ?
+          loadInfo.externalContentPolicyType : loadInfo.contentPolicyType;
+      if ((rawtype === 6 || rawtype === 7) && listener) {
+        listener({responseHeaders: []}).responseHeaders.forEach( function(header) {
+          channel.setResponseHeader(header.name, header.value, false);
+        });
+      }
+    }
+  }
+  return {
+    onHeadersReceived: {
+      addListener: function (l) {
+        listener = l;
+        observerService.addObserver(observe, 'http-on-examine-response', false);
+      },
+      removeListener: function () {
+        if (listener) {
+          observerService.removeObserver(observe, 'http-on-examine-response');
+          listener = null;
+        }
+      }
+    }
+  };
+})();
