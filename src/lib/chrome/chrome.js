@@ -1,27 +1,14 @@
 'use strict';
 
-var app = new EventEmitter();
-
-app.globals = {
-  browser: navigator.userAgent.indexOf('OPR') === -1 ? 'chrome' : 'opera'
-};
-
-app.once('load', function () {
-  let script = document.createElement('script');
-  document.body.appendChild(script);
-  script.src = '../background.js';
-});
-
-app.Promise = Promise;
-
-// EventEmitter
-app.EventEmitter = EventEmitter;
+var app = {};
 
 app.storage = (function () {
   let objs = {};
   chrome.storage.local.get(null, function (o) {
     objs = o;
-    app.emit('load');
+    let script = document.createElement('script');
+    document.body.appendChild(script);
+    script.src = 'lib/background.js';
   });
   return {
     read: (id) => objs[id],
@@ -60,27 +47,8 @@ app.button = (function () {
 })();
 
 app.tab = {
-  open: (url) => chrome.tabs.create({
-    url: url,
-    active: true
-  }),
-  list: function () {
-    var d = app.Promise.defer();
-    chrome.tabs.query({
-      currentWindow: false
-    }, function (tabs) {
-      d.resolve(tabs);
-    });
-    return d.promise;
-  }
+  open: (url) => chrome.tabs.create({url})
 };
-
-app.notification = (title, text) => chrome.notifications.create(null, {
-  type: 'basic',
-  iconUrl: chrome.extension.getURL('./') + 'data/icons/48.png',
-  title: title,
-  message: text
-}, function () {});
 
 app.version = () => chrome[chrome.runtime && chrome.runtime.getManifest ? 'runtime' : 'extension'].getManifest().version;
 
@@ -115,3 +83,5 @@ app.MatchPattern = function (arr) {
   return arr;
 };
 app.webRequest = chrome.webRequest;
+app.contentSettings = chrome.contentSettings;
+app.contextMenus = chrome.contextMenus;

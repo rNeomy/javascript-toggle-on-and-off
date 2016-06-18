@@ -3,17 +3,16 @@
   "short_name": "ijtoaoff",
   "description": "Toggle JavaScript engine on and off the easy way",
   "author": "Richard Neomy",
-  "version": "0.1.0.1",
+  "version": "0.1.2",
   "manifest_version": 2,
   "permissions": [
     "storage",
-    "tabs",
-    "notifications",
+    "contentSettings",
+    "contextMenus",
     "webRequest",
     "webRequestBlocking",
     "<all_urls>"
   ],
-  "web_accessible_resources": [],
   "browser_action": {
     "default_icon": {
       "19": "data/icons/19.png",
@@ -21,7 +20,7 @@
     }
   },
   "background": {
-    "page": "lib/chrome/background.html"
+    "scripts": ["lib/config.js", "lib/chrome/chrome.js"]
   },
   "homepage_url": "http://add0n.com/javascript-toggler.html",
   "icons": {

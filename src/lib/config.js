@@ -1,7 +1,7 @@
 'use strict';
 
-var isFirefox = typeof require !== 'undefined', config;
-if (isFirefox) {
+var config;
+if (typeof require !== 'undefined') {
   var app = require('./firefox/firefox');
   config = exports;
 }
@@ -34,22 +34,4 @@ config.welcome = {
   set show (val) {
     app.storage.write('show', val);
   }
-};
-// Complex get and set
-config.get = function (name) {
-  return name.split('.').reduce(function (p, c) {
-    return p[c];
-  }, config);
-};
-config.set = function (name, value) {
-  function set(name, value, scope) {
-    name = name.split('.');
-    if (name.length > 1) {
-      set.call((scope || this)[name.shift()], name.join('.'), value)
-    }
-    else {
-      this[name[0]] = value;
-    }
-  }
-  set(name, value, config);
 };

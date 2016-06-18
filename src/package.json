@@ -1,21 +1,14 @@
 {
-  "title": "Template Extension",
-  "name": "itextension",
-  "description": "this is a template extension",
-  "id": "jid1-RjdrQcWSVS8WQk1Lu@jetpack",
+  "title": "JavaScript Toggle On and Off",
+  "name": "ijtoaoff",
+  "description": "Toggle JavaScript engine on and off the easy way",
+  "id": "jid1-EbhJmw1yu6Juy@jetpack",
   "license": "Mozilla Public License, version 2.0",
-  "version": "0.1.0",
-  "author": "Unknown",
+  "version": "0.1.2",
+  "author": "Richard Neomy",
   "main": "./lib/background.js",
   "url": "http://add0n.com/javascript-toggler.html",
   "permissions": {
     "private-browsing": true
-  },
-  "preferences": [{
-    "name": "openOptions",
-    "title": "Open Options",
-    "label": "Options",
-    "type": "control",
-    "value": "this is the default string value"
-  }]
+  }
 }

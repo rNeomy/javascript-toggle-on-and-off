@@ -1,11 +1,7 @@
 'use strict';
 
-/**** wrapper (start) ****/
-if (typeof require !== 'undefined') {
-  var app = require('./firefox/firefox');
-  var config = require('./config');
-}
-/**** wrapper (end) ****/
+var app = app || require('./firefox/firefox');
+var config = config || require('./config');
 
 function checkState () {
   app.button.icon = config.js.state ? 'icons' : 'icons/n';
@@ -17,9 +13,8 @@ var blocker = (function () {
     let headers = details.responseHeaders;
     headers.push({
       'name': 'Content-Security-Policy',
-      'value': 'script-src "none"'
+      'value': "script-src 'none'" // jshint ignore:line
     });
-
     return {
       responseHeaders: headers
     };
@@ -28,10 +23,7 @@ var blocker = (function () {
     install: function () {
       app.webRequest.onHeadersReceived.addListener(listener,
         {
-          'urls': new app.MatchPattern([
-            'http://*/*',
-            'https://*/*'
-          ]),
+          'urls': new app.MatchPattern(['<all_urls>']),
           'types': [
             'main_frame',
             'sub_frame'
@@ -39,9 +31,17 @@ var blocker = (function () {
         },
         ['blocking', 'responseHeaders']
       );
+      app.contentSettings.javascript.set({
+        primaryPattern: '<all_urls>',
+        setting: 'block'
+      });
     },
     remove: function () {
       app.webRequest.onHeadersReceived.removeListener(listener);
+      app.contentSettings.javascript.set({
+        primaryPattern: '<all_urls>',
+        setting: 'allow'
+      });
     }
   };
 })();
@@ -54,6 +54,13 @@ app.button.onCommand(() => {
 });
 blocker[config.js.state ? 'remove' : 'install']();
 checkState();
+
+//
+app.contextMenus.create({
+  title: 'Check JavaScript execution',
+  contexts: ['browser_action'],
+  onclick: () => app.tab.open('http://tools.add0n.com/check-javascript.html')
+});
 
 //
 app.startup(function () {
