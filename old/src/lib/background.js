@@ -5,7 +5,8 @@ var config = config || require('./config');
 
 function checkState () {
   app.button.icon = config.js.state ? 'icons' : 'icons/n';
-  app.button.label = `JavaScript Toggle On and Off (${config.js.state})`;
+  app.button.label = 'JavaScript Toggle On and Off\n\n' +
+    `JavaScript is "${config.js.state ? 'Enabled' : 'Disabled'}"`;
 }
 
 var blocker = (function () {
@@ -59,7 +60,7 @@ checkState();
 app.contextMenus.create({
   title: 'Check JavaScript execution',
   contexts: ['browser_action'],
-  onclick: () => app.tab.open('http://tools.add0n.com/check-javascript.html')
+  onclick: () => app.tab.open('http://tools.add0n.com/check-javascript.html?rand=' + Math.random())
 });
 
 //

@@ -63,14 +63,20 @@ app.startup = (function () {
       }
     }
   }
-  chrome.runtime.onInstalled.addListener(function (details) {
-    loadReason = details.reason;
-    check();
-  });
-  chrome.runtime.onStartup.addListener(function () {
+  if (chrome.runtime.onInstalled && chrome.runtime.onStartup) {
+    chrome.runtime.onInstalled.addListener(function (details) {
+      loadReason = details.reason;
+      check();
+    });
+    chrome.runtime.onStartup.addListener(function () {
+      loadReason = 'startup';
+      check();
+    });
+  }
+  else {
     loadReason = 'startup';
     check();
-  });
+  }
   return (c) => {
     callback = c;
     check();

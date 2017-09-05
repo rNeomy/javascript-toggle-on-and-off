@@ -4,11 +4,12 @@
   "description": "Toggle JavaScript engine on and off the easy way",
   "id": "jid1-EbhJmw1yu6Juy@jetpack",
   "license": "Mozilla Public License, version 2.0",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "author": "Richard Neomy",
   "main": "./lib/background.js",
   "url": "http://add0n.com/javascript-toggler.html",
   "permissions": {
-    "private-browsing": true
+    "private-browsing": true,
+    "multiprocess": true
   }
 }

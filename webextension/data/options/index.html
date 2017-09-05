@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Options :: JavaScript Toggle On and Off</title>
+  <style>
+    body { padding: 10px; }
+    input[type=text] { width: 100%; }
+  </style>
+</head>
+
+<body>
+  <label><input type="checkbox" id="refresh"> Refresh current webpage when JavaScript engine is toggled</label>
+  <p>
+    <label>
+      White-list (Comma separated list of domains to allow JS when it is globally disallowed):
+      <input type="text" id="whitelist">
+    </label>
+  </p>
+
+  <div>
+    <button id="save">Save</button>
+    <span id="status"></span>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>

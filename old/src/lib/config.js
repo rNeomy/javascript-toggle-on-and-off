@@ -1,13 +1,7 @@
 'use strict';
 
-var config;
-if (typeof require !== 'undefined') {
-  var app = require('./firefox/firefox');
-  config = exports;
-}
-else {
-  config = {};
-}
+var config = typeof require === 'undefined' ? {} : exports;
+var app = app || require('./firefox/firefox');
 
 config.js = {
   get state () {
