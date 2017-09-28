@@ -26,10 +26,11 @@ var refresh = () => chrome.storage.local.get({
 
 var js = {
   whitelist: [],
-  listen: d => {
+  blacklist: [],
+  whiteListen: d => {
     const hostname = d.url.split('://')[1].split('/')[0];
     for (const h of js.whitelist) {
-      if (hostname.startsWith(h) || h.startsWith(hostname)) {
+      if (hostname.endsWith(h)) {
         return;
       }
     }
@@ -40,15 +41,41 @@ var js = {
     });
     return {responseHeaders};
   },
+  blackListen: d => {
+    const hostname = d.url.split('://')[1].split('/')[0];
+    for (const h of js.blacklist) {
+      if (hostname.endsWith(h)) {
+        const responseHeaders = d.responseHeaders;
+        responseHeaders.push({
+          'name': 'Content-Security-Policy',
+          'value': 'script-src \'none\''
+        });
+        return {responseHeaders};
+      }
+    }
+    return;
+  },
   enable: () => {
-    chrome.webRequest.onHeadersReceived.removeListener(js.listen);
+    chrome.webRequest.onHeadersReceived.removeListener(js.whiteListen);
+    chrome.webRequest.onHeadersReceived.addListener(
+      js.blackListen,
+      {
+        'urls': ['*://*/*'],
+        'types': [
+          'main_frame',
+          'sub_frame'
+        ]
+      },
+      ['blocking', 'responseHeaders']
+    );
     window.setTimeout(refresh, 10);
     app.icon();
     app.title('JavaScript is Enabled');
   },
   disable: () => {
+    chrome.webRequest.onHeadersReceived.removeListener(js.blackListen);
     chrome.webRequest.onHeadersReceived.addListener(
-      js.listen,
+      js.whiteListen,
       {
         'urls': ['*://*/*'],
         'types': [
@@ -66,9 +93,11 @@ var js = {
 
 chrome.storage.local.get({
   state: true,
-  whitelist: []
+  whitelist: [],
+  blacklist: []
 }, prefs => {
   js.whitelist = prefs.whitelist;
+  js.blacklist = prefs.blacklist;
   js[prefs.state ? 'enable' : 'disable']();
 });
 
@@ -78,6 +107,9 @@ chrome.storage.onChanged.addListener(prefs => {
   }
   if (prefs.whitelist) {
     js.whitelist = prefs.whitelist.newValue;
+  }
+  if (prefs.blacklist) {
+    js.blacklist = prefs.blacklist.newValue;
   }
 });
 //
@@ -96,10 +128,19 @@ chrome.contextMenus.create({
   title: 'Check JavaScript execution',
   contexts: ['browser_action']
 });
+chrome.contextMenus.create({
+  id: 'open-settings',
+  title: 'Open settings',
+  contexts: ['browser_action']
+});
 chrome.contextMenus.onClicked.addListener(info => {
   if (info.menuItemId === 'open-test-page') {
     chrome.tabs.create({
       url: 'http://tools.add0n.com/check-javascript.html?rand=' + Math.random()
+    });
+  } else if(info.menuItemId === 'open-settings') {
+    chrome.tabs.create({
+      url: browser.extension.getURL("data/options/index.html")
     });
   }
 });
