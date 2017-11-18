@@ -32,6 +32,14 @@ var refresh = () => chrome.storage.local.get({
 var js = {
   enable: () => {
     chrome.contentSettings.javascript.clear({}, refresh);
+    chrome.storage.local.get({
+      blacklist: []
+    }, prefs => {
+      prefs.blacklist.forEach(host => chrome.contentSettings.javascript.set({
+        primaryPattern: `*://*.${host}/*`,
+        setting: 'block'
+      }));
+    });
     app.icon();
     app.title('JavaScript is Enabled');
   },
