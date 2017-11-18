@@ -9,6 +9,7 @@
     "storage",
     "contentSettings",
     "contextMenus",
+    "tabs",
     "<all_urls>"
   ],
   "browser_action": {

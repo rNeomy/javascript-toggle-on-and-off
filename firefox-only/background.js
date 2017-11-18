@@ -17,7 +17,6 @@ var app = {
 var refresh = () => chrome.storage.local.get({
   refresh: true
 }, prefs => {
-  console.log(prefs, tab)
   if (prefs.refresh && tab && tab.url && tab.url.startsWith('http')) {
     chrome.tabs.reload(tab.id);
   }

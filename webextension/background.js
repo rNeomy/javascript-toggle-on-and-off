@@ -18,7 +18,9 @@ var refresh = () => chrome.storage.local.get({
   refresh: true
 }, prefs => {
   if (prefs.refresh && tab && tab.url && tab.url.startsWith('http')) {
-    chrome.tabs.reload(tab.id);
+    chrome.tabs.reload(tab.id, {
+      bypassCache: true
+    });
   }
   tab = null;
 });
