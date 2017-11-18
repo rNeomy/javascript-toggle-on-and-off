@@ -3,7 +3,7 @@
   "short_name": "ijtoaoff",
   "description": "Toggle JavaScript engine on and off the easy way",
   "author": "Richard Neomy",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -37,7 +37,8 @@
   },
   "applications": {
     "gecko": {
-      "id": "{479f0278-2c34-4365-b9f0-1d328d0f0a40}"
+      "id": "{479f0278-2c34-4365-b9f0-1d328d0f0a40}",
+      "strict_min_version": "52.0"
     }
   }
 }
