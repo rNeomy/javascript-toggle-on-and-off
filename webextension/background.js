@@ -30,16 +30,17 @@ var refresh = () => chrome.storage.local.get({
 });
 
 var js = {
+  wildcard: host => `*://*.${host}/*`.replace(/\*\.\*/g, '*'),
   enable: () => {
-    chrome.contentSettings.javascript.clear({}, refresh);
-    chrome.storage.local.get({
+    chrome.contentSettings.javascript.clear({}, () => chrome.storage.local.get({
       blacklist: []
     }, prefs => {
       prefs.blacklist.forEach(host => chrome.contentSettings.javascript.set({
-        primaryPattern: `*://*.${host}/*`,
+        primaryPattern: js.wildcard(host),
         setting: 'block'
       }));
-    });
+      refresh();
+    }));
     app.icon();
     app.title('JavaScript is Enabled');
   },
@@ -53,7 +54,7 @@ var js = {
         whitelist: []
       }, prefs => {
         prefs.whitelist.forEach(host => chrome.contentSettings.javascript.set({
-          primaryPattern: `*://*.${host}/*`,
+          primaryPattern: js.wildcard(host),
           setting: 'allow'
         }));
       });
@@ -79,6 +80,9 @@ chrome.storage.onChanged.addListener(prefs => {
   if (prefs.whitelist && !prefs.state) {
     init();
   }
+  if (prefs.blacklist && !prefs.state) {
+    init();
+  }
 });
 //
 chrome.browserAction.onClicked.addListener(t => {
@@ -91,11 +95,17 @@ chrome.browserAction.onClicked.addListener(t => {
   });
 });
 //
-chrome.contextMenus.create({
-  id: 'open-test-page',
-  title: 'Check JavaScript execution',
-  contexts: ['browser_action']
+(callback => {
+  chrome.runtime.onInstalled.addListener(callback);
+  chrome.runtime.onStartup.addListener(callback);
+})(() => {
+  chrome.contextMenus.create({
+    id: 'open-test-page',
+    title: 'Check JavaScript execution',
+    contexts: ['browser_action']
+  });
 });
+
 chrome.contextMenus.onClicked.addListener(info => {
   if (info.menuItemId === 'open-test-page') {
     chrome.tabs.create({
@@ -109,6 +119,9 @@ chrome.storage.local.get('version', prefs => {
   if (prefs.version !== version) {
     window.setTimeout(() => {
       chrome.storage.local.set({version}, () => {
+        if (prefs.version === '0.1.9') {
+          return;
+        }
         chrome.tabs.create({
           url: 'http://add0n.com/javascript-toggler.html?version=' + version +
             '&type=' + (prefs.version ? ('upgrade&p=' + prefs.version) : 'install')
