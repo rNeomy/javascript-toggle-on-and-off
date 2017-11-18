@@ -2,11 +2,13 @@
 
 function restore() {
   chrome.storage.local.get({
-    whitelist: [],
-    refresh: true
+    'whitelist': [],
+    'refresh-enabled': true,
+    'refresh-disabled': true
   }, prefs => {
     document.getElementById('whitelist').value = prefs.whitelist.join(', ');
-    document.getElementById('refresh').checked = prefs.refresh;
+    document.getElementById('refresh-enabled').checked = prefs['refresh-enabled'];
+    document.getElementById('refresh-disabled').checked = prefs['refresh-disabled'];
   });
 }
 function save() {
@@ -19,7 +21,8 @@ function save() {
 
   chrome.storage.local.set({
     whitelist,
-    refresh: document.getElementById('refresh').checked
+    'refresh-enabled': document.getElementById('refresh-enabled').checked,
+    'refresh-disabled': document.getElementById('refresh-disabled').checked
   }, () => {
     restore();
     const status = document.getElementById('status');

@@ -15,12 +15,16 @@ var app = {
 };
 
 var refresh = () => chrome.storage.local.get({
-  refresh: true
+  'refresh-enabled': true,
+  'refresh-disabled': true,
+  'state': true
 }, prefs => {
-  if (prefs.refresh && tab && tab.url && tab.url.startsWith('http')) {
-    chrome.tabs.reload(tab.id, {
-      bypassCache: true
-    });
+  if (tab && tab.url && tab.url.startsWith('http')) {
+    if ((prefs.state && prefs['refresh-enabled']) || (prefs.state === false && prefs['refresh-disabled'])) {
+      chrome.tabs.reload(tab.id, {
+        bypassCache: true
+      });
+    }
   }
   tab = null;
 });

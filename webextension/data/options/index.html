@@ -9,7 +9,17 @@
 </head>
 
 <body>
-  <label><input type="checkbox" id="refresh"> Refresh current webpage when JavaScript engine is toggled</label>
+  <table width=100%>
+    <tr>
+      <td><input type="checkbox" id="refresh-enabled"></td>
+      <td><label for="refresh-enabled">Refresh current webpage when JavaScript engine is toggled to "Enabled"</label></td>
+    </tr>
+    <tr>
+      <td><input type="checkbox" id="refresh-disabled"></td>
+      <td><label for="refresh-disabled">Refresh current webpage when JavaScript engine is toggled to "Disabled"</label></td>
+    </tr>
+  </table>
+
   <p>
     <label>
       White-list (Comma separated list of domains to allow JS when it is globally disallowed):
