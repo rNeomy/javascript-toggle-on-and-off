@@ -4,7 +4,7 @@ var tab;
 
 var app = {
   title: title => chrome.browserAction.setTitle({
-    title: 'JavaScript Toggle On and Off\n\n' + title
+    title
   }),
   icon: (path = '') => chrome.browserAction.setIcon({
     path: {
@@ -75,7 +75,7 @@ var js = {
     );
     window.setTimeout(refresh, 10);
     app.icon();
-    app.title('JavaScript is Enabled');
+    app.title('Click to disable JavaScript');
   },
   disable: () => {
     chrome.webRequest.onHeadersReceived.removeListener(js.blackListen);
@@ -92,7 +92,7 @@ var js = {
     );
     window.setTimeout(refresh, 10);
     app.icon('/n');
-    app.title('JavaScript is Disabled');
+    app.title('Click to enable JavaScript');
   }
 };
 
