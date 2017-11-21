@@ -6,12 +6,19 @@ var app = {
   title: title => chrome.browserAction.setTitle({
     title
   }),
-  icon: (path = '') => chrome.browserAction.setIcon({
-    path: {
-      '19': 'data/icons' + path + '/19.png',
-      '38': 'data/icons' + path + '/38.png'
+  icon: (path = '', badge) => {
+    chrome.browserAction.setIcon({
+      path: {
+        '19': 'data/icons' + path + '/19.png',
+        '38': 'data/icons' + path + '/38.png'
+      }
+    });
+    if (badge) {
+      chrome.browserAction.setBadgeText({
+        text: path ? 'd' : ''
+      });
     }
-  })
+  }
 };
 
 var refresh = () => chrome.storage.local.get({
@@ -31,7 +38,7 @@ var refresh = () => chrome.storage.local.get({
 
 var js = {
   wildcard: host => `*://*.${host}/*`.replace(/\*\.\*/g, '*'),
-  enable: () => {
+  enable: badge => {
     chrome.contentSettings.javascript.clear({}, () => chrome.storage.local.get({
       blacklist: []
     }, prefs => {
@@ -41,10 +48,10 @@ var js = {
       }));
       refresh();
     }));
-    app.icon();
+    app.icon('', badge);
     app.title('Click to disable JavaScript');
   },
-  disable: () => {
+  disable: badge => {
     chrome.contentSettings.javascript.clear({}, () => {
       chrome.contentSettings.javascript.set({
         primaryPattern: '<all_urls>',
@@ -59,23 +66,24 @@ var js = {
         }));
       });
     });
-    app.icon('/n');
+    app.icon('/n', badge);
     app.title('Click to enable JavaScript');
   }
 };
 
 function init() {
   chrome.storage.local.get({
-    state: true
+    state: true,
+    badge: false
   }, prefs => {
-    js[prefs.state ? 'enable' : 'disable']();
+    js[prefs.state ? 'enable' : 'disable'](prefs.badge);
   });
 }
 init();
 
 chrome.storage.onChanged.addListener(prefs => {
   if (prefs.state) {
-    js[prefs.state.newValue ? 'enable' : 'disable']();
+    init();
   }
   if (prefs.whitelist && !prefs.state) {
     init();

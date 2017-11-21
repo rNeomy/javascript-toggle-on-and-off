@@ -1,17 +1,29 @@
 'use strict';
 
 var tab;
+var badge = false;
 
 var app = {
-  title: title => chrome.browserAction.setTitle({
-    title
-  }),
-  icon: (path = '') => chrome.browserAction.setIcon({
-    path: {
-      '19': 'data/icons' + path + '/19.png',
-      '38': 'data/icons' + path + '/38.png'
+  title: title => {
+    chrome.browserAction.setTitle({
+      title
+    });
+  },
+  icon: (path = '') => {
+    if (chrome.browserAction.setIcon) {
+      chrome.browserAction.setIcon({
+        path: {
+          '19': 'data/icons' + path + '/19.png',
+          '38': 'data/icons' + path + '/38.png'
+        }
+      });
     }
-  })
+    if (badge && chrome.browserAction.setBadgeText) {
+      chrome.browserAction.setBadgeText({
+        text: path ? 'd' : ''
+      });
+    }
+  }
 };
 
 var refresh = () => chrome.storage.local.get({
@@ -98,9 +110,11 @@ var js = {
 
 chrome.storage.local.get({
   state: true,
+  badge: false,
   whitelist: [],
   blacklist: []
 }, prefs => {
+  badge = prefs.badge;
   js.whitelist = prefs.whitelist;
   js.blacklist = prefs.blacklist;
   js[prefs.state ? 'enable' : 'disable']();
@@ -116,9 +130,12 @@ chrome.storage.onChanged.addListener(prefs => {
   if (prefs.blacklist) {
     js.blacklist = prefs.blacklist.newValue;
   }
+  if (prefs.badge) {
+    badge = prefs.badge.newValue;
+  }
 });
 //
-chrome.browserAction.onClicked.addListener(t => {
+var onClicked = t => {
   tab = t;
   chrome.storage.local.get({
     state: true
@@ -126,29 +143,34 @@ chrome.browserAction.onClicked.addListener(t => {
     prefs.state = !prefs.state;
     chrome.storage.local.set(prefs);
   });
-});
+};
+chrome.browserAction.onClicked.addListener(onClicked);
 //
-chrome.contextMenus.create({
-  id: 'open-test-page',
-  title: 'Check JavaScript execution',
-  contexts: ['browser_action']
-});
-chrome.contextMenus.create({
-  id: 'open-settings',
-  title: 'Open settings',
-  contexts: ['browser_action']
-});
-chrome.contextMenus.onClicked.addListener(info => {
-  if (info.menuItemId === 'open-test-page') {
-    chrome.tabs.create({
-      url: 'http://tools.add0n.com/check-javascript.html?rand=' + Math.random()
-    });
-  }
-  else if (info.menuItemId === 'open-settings') {
-    chrome.runtime.openOptionsPage();
-  }
-});
-//
+if (chrome.contextMenus) {
+  chrome.contextMenus.create({
+    id: 'open-test-page',
+    title: 'Check JavaScript execution',
+    contexts: ['browser_action']
+  });
+  chrome.contextMenus.create({
+    id: 'open-settings',
+    title: 'Open settings',
+    contexts: ['browser_action']
+  });
+  chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === 'open-test-page') {
+      chrome.tabs.create({
+        url: 'http://tools.add0n.com/check-javascript.html?rand=' + Math.random()
+      });
+    }
+    else if (info.menuItemId === 'open-settings') {
+      chrome.runtime.openOptionsPage();
+    }
+    else if (info.menuItemId === 'toggle-action') {
+      onClicked(tab);
+    }
+  });
+}
 chrome.storage.local.get('version', prefs => {
   const version = chrome.runtime.getManifest().version;
   // display FAQs only on install
