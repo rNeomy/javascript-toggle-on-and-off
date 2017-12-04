@@ -1,9 +1,9 @@
 {
-  "name": "JavaScript Toggle On and Off (WebExtension)",
+  "name": "JavaScript Toggle On and Off",
   "short_name": "ijtoaoff",
   "description": "Toggle JavaScript engine on and off the easy way",
   "author": "Richard Neomy",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -11,7 +11,8 @@
     "contextMenus",
     "<all_urls>",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "notifications"
   ],
   "browser_action": {
     "default_icon": {
@@ -21,7 +22,6 @@
     "default_title": "Click to disable JavaScript"
   },
   "background": {
-    "persistent": false,
     "scripts": [
       "background.js"
     ]
@@ -35,6 +35,14 @@
   "options_ui": {
     "page": "data/options/index.html",
     "chrome_style": true
+  },
+  "commands": {
+    "toggle-javascript-engine": {
+      "suggested_key": {
+        "default": "Alt+Shift+L"
+      },
+      "description": "Toggle JavaScript Engine"
+    }
   },
   "applications": {
     "gecko": {

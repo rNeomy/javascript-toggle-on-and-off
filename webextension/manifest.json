@@ -3,14 +3,15 @@
   "short_name": "ijtoaoff",
   "description": "Toggle JavaScript engine on and off the easy way",
   "author": "Richard Neomy",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "manifest_version": 2,
   "permissions": [
     "storage",
     "contentSettings",
     "contextMenus",
     "tabs",
-    "<all_urls>"
+    "<all_urls>",
+    "notifications"
   ],
   "browser_action": {
     "default_icon": {
