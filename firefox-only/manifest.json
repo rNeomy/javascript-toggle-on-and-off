@@ -9,6 +9,7 @@
     "storage",
     "tabs",
     "contextMenus",
+	"menus",
     "<all_urls>",
     "webRequest",
     "webRequestBlocking"

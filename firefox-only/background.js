@@ -157,6 +157,22 @@ if (chrome.contextMenus) {
     title: 'Open settings',
     contexts: ['browser_action']
   });
+  chrome.contextMenus.create({
+    id: 'lists-separator',
+    type: 'separator'
+  });
+  chrome.contextMenus.create({
+    id: 'whitelist-this',
+    title: 'Whitelist this website',
+    type: 'checkbox',
+    contexts: ['browser_action']
+  });
+  chrome.contextMenus.create({
+    id: 'blacklist-this',
+    title: 'Blacklist this website',
+    type: 'checkbox',
+    contexts: ['browser_action']
+  });
   chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === 'open-test-page') {
       chrome.tabs.create({
@@ -169,8 +185,74 @@ if (chrome.contextMenus) {
     else if (info.menuItemId === 'toggle-action') {
       onClicked(tab);
     }
+	else if(tab.url.startsWith('http') && (info.menuItemId === 'whitelist-this' || info.menuItemId === 'blacklist-this')) {
+      var url = tab.url.split('://')[1].split('/')[0];
+      if(info.menuItemId === 'whitelist-this') {
+        var index = js.whitelist.indexOf(url);
+        if(index > -1) {
+          js.whitelist.splice(index, 1);
+        } else {
+          js.whitelist[js.whitelist.length] = url;
+        }
+      } else if(info.menuItemId === 'blacklist-this') {
+        var index = js.blacklist.indexOf(url);
+        if(index > -1) {
+          js.blacklist.splice(index, 1);
+        } else {
+          js.blacklist[js.blacklist.length] = url;
+        }
+      }
+      chrome.storage.local.set({
+        whitelist: js.whitelist,
+        blacklist: js.blacklist
+      }, () => {
+        chrome.storage.local.get({
+          refresh: true
+        }, prefs => {
+          if (prefs.refresh) {
+          browser.tabs.reload(tab.id);
+          }
+        });
+      });
+    }
   });
 }
+//
+function tabListener(tabId) {
+  browser.tabs.get(tabId).then(function(tabInfo) {
+    if(tabInfo.url.startsWith('http')) {
+      var url = tabInfo.url.split('://')[1].split('/')[0];
+      browser.menus.update("whitelist-this", {
+        title: 'Whitelist this website (' + url + ')',
+        enabled: true,
+        checked: js.whitelist.indexOf(url) > -1,
+      });
+      browser.menus.update("blacklist-this", {
+        title: 'Blacklist this website (' + url + ')',
+        enabled: true,
+        checked: js.blacklist.indexOf(url) > -1,
+      });
+    } else {
+      browser.menus.update("whitelist-this", {
+        title: 'Whitelist this website',
+        enabled: false,
+        checked: false,
+      });
+      browser.menus.update("blacklist-this", {
+        title: 'Blacklist this website',
+        enabled: false,
+        checked: false,
+      });
+    }
+  }, function(error) {
+    console.log(`Error: ${error}`);
+  });
+}
+browser.tabs.onActivated.addListener(function(activeInfo) {
+  tabListener(activeInfo.tabId);
+});
+browser.tabs.onUpdated.addListener(tabListener);
+//
 chrome.storage.local.get('version', prefs => {
   const version = chrome.runtime.getManifest().version;
   // display FAQs only on install
