@@ -135,7 +135,7 @@ chrome.storage.onChanged.addListener(prefs => {
   }
 });
 //
-var onClicked = t => {
+chrome.browserAction.onClicked.addListener(t => {
   tab = t;
   chrome.storage.local.get({
     state: true
@@ -143,8 +143,7 @@ var onClicked = t => {
     prefs.state = !prefs.state;
     chrome.storage.local.set(prefs);
   });
-};
-chrome.browserAction.onClicked.addListener(onClicked);
+});
 //
 if (chrome.contextMenus) {
   chrome.contextMenus.create({
@@ -157,7 +156,7 @@ if (chrome.contextMenus) {
     title: 'Open settings',
     contexts: ['browser_action']
   });
-  chrome.contextMenus.onClicked.addListener((info, tab) => {
+  chrome.contextMenus.onClicked.addListener(info => {
     if (info.menuItemId === 'open-test-page') {
       chrome.tabs.create({
         url: 'http://tools.add0n.com/check-javascript.html?rand=' + Math.random()
@@ -165,9 +164,6 @@ if (chrome.contextMenus) {
     }
     else if (info.menuItemId === 'open-settings') {
       chrome.runtime.openOptionsPage();
-    }
-    else if (info.menuItemId === 'toggle-action') {
-      onClicked(tab);
     }
   });
 }
