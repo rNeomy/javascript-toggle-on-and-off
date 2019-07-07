@@ -1,5 +1,12 @@
 'use strict';
 
+// localization
+[...document.querySelectorAll('[data-i18n]')].forEach(e => {
+  e.textContent = chrome.i18n.getMessage(e.dataset.i18n);
+});
+
+const toast = document.getElementById('toast');
+
 function restore() {
   chrome.storage.local.get({
     'whitelist': [],
@@ -34,9 +41,8 @@ function save() {
     'badge': document.getElementById('badge').checked
   }, () => {
     restore();
-    const status = document.getElementById('status');
-    status.textContent = 'Options saved.';
-    setTimeout(() => status.textContent = '', 750);
+    toast.textContent = 'Options saved.';
+    setTimeout(() => toast.textContent = '', 750);
     chrome.storage.local.get({
       'badge': false,
       'state': false
@@ -48,3 +54,22 @@ function save() {
 
 document.addEventListener('DOMContentLoaded', restore);
 document.getElementById('save').addEventListener('click', save);
+
+// reset
+document.getElementById('reset').addEventListener('click', e => {
+  if (e.detail === 1) {
+    toast.textContent = 'Double-click to reset!';
+    window.setTimeout(() => toast.textContent = '', 750);
+  }
+  else {
+    localStorage.clear();
+    chrome.storage.local.clear(() => {
+      chrome.runtime.reload();
+      window.close();
+    });
+  }
+});
+// support
+document.getElementById('support').addEventListener('click', () => chrome.tabs.create({
+  url: chrome.runtime.getManifest().homepage_url + '?rd=donate'
+}));

@@ -2,14 +2,14 @@
 
 var tab;
 
-var notify = message => chrome.notifications.create({
-  title: 'JavaScript Toggle On and Off',
+const notify = message => chrome.notifications.create({
+  title: chrome.runtime.getManifest().name,
   type: 'basic',
   iconUrl: 'data/icons/48.png',
   message
 });
 
-var app = {
+const app = {
   title: title => chrome.browserAction.setTitle({
     title
   }),
@@ -28,7 +28,7 @@ var app = {
   }
 };
 
-var refresh = () => chrome.storage.local.get({
+const refresh = () => chrome.storage.local.get({
   'refresh-enabled': true,
   'refresh-disabled': true,
   'state': true
@@ -43,7 +43,7 @@ var refresh = () => chrome.storage.local.get({
   tab = null;
 });
 
-var js = {
+const js = {
   wildcard: host => `*://*.${host}/*`.replace(/\*\.\*/g, '*'),
   enable: badge => {
     chrome.contentSettings.javascript.clear({}, () => chrome.storage.local.get({
@@ -56,7 +56,7 @@ var js = {
       window.setTimeout(refresh, 10);
     }));
     app.icon('', badge);
-    app.title('Click to disable JavaScript');
+    app.title(chrome.i18n.getMessage('bg_disable'));
   },
   disable: badge => {
     chrome.contentSettings.javascript.clear({}, () => {
@@ -75,7 +75,7 @@ var js = {
       });
     });
     app.icon('/n', badge);
-    app.title('Click to enable JavaScript');
+    app.title(chrome.i18n.getMessage('bg_enable'));
   }
 };
 
@@ -111,33 +111,34 @@ chrome.browserAction.onClicked.addListener(t => {
   });
 });
 //
-(callback => {
-  chrome.runtime.onInstalled.addListener(callback);
-  chrome.runtime.onStartup.addListener(callback);
-})(() => {
-  chrome.contextMenus.create({
-    id: 'open-test-page',
-    title: 'Check JavaScript execution',
-    contexts: ['browser_action']
-  });
-  chrome.contextMenus.create({
-    id: 'whitelist-toggle',
-    title: 'Add to or remove from whitelist',
-    contexts: ['browser_action'],
-    documentUrlPatterns: ['http://*/*', 'https://*/*']
-  });
-  chrome.contextMenus.create({
-    id: 'blacklist-toggle',
-    title: 'Add to or remove from blacklist',
-    contexts: ['browser_action'],
-    documentUrlPatterns: ['http://*/*', 'https://*/*']
-  });
-});
+{
+  const onStartup = () => {
+    chrome.contextMenus.create({
+      id: 'open-test-page',
+      title: 'Check JavaScript execution',
+      contexts: ['browser_action']
+    });
+    chrome.contextMenus.create({
+      id: 'whitelist-toggle',
+      title: 'Add to or remove from whitelist',
+      contexts: ['browser_action'],
+      documentUrlPatterns: ['http://*/*', 'https://*/*']
+    });
+    chrome.contextMenus.create({
+      id: 'blacklist-toggle',
+      title: 'Add to or remove from blacklist',
+      contexts: ['browser_action'],
+      documentUrlPatterns: ['http://*/*', 'https://*/*']
+    });
+  };
+  chrome.runtime.onInstalled.addListener(onStartup);
+  chrome.runtime.onStartup.addListener(onStartup);
+}
 
 chrome.contextMenus.onClicked.addListener((info, t) => {
   if (info.menuItemId === 'open-test-page') {
     chrome.tabs.create({
-      url: 'http://tools.add0n.com/check-javascript.html?rand=' + Math.random()
+      url: 'https://webbrowsertools.com/javascript/?rand=' + Math.random()
     });
   }
   else if (info.menuItemId === 'whitelist-toggle' || info.menuItemId === 'blacklist-toggle') {
@@ -160,42 +161,34 @@ chrome.contextMenus.onClicked.addListener((info, t) => {
       });
     }
     else {
-      notify('This extension only works on HTTP and HTTPS schemes');
+      notify(chrome.i18n.getMessage('bg_warning'));
     }
   }
 });
 
 // FAQs & Feedback
-chrome.storage.local.get({
-  'version': null,
-  'faqs': navigator.userAgent.indexOf('Firefox') === -1,
-  'last-update': 0,
-}, prefs => {
-  const version = chrome.runtime.getManifest().version;
-
-  if (prefs.version ? (prefs.faqs && prefs.version !== version) : true) {
-    const now = Date.now();
-    const doUpdate = (now - prefs['last-update']) / 1000 / 60 / 60 / 24 > 30;
-    chrome.storage.local.set({
-      version,
-      'last-update': doUpdate ? Date.now() : prefs['last-update']
-    }, () => {
-      // do not display the FAQs page if last-update occurred less than 30 days ago.
-      if (doUpdate) {
-        const p = Boolean(prefs.version);
-        chrome.tabs.create({
-          url: chrome.runtime.getManifest().homepage_url + '&version=' + version +
-            '&type=' + (p ? ('upgrade&p=' + prefs.version) : 'install'),
-          active: p === false
-        });
+{
+  const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
+  const {name, version} = getManifest();
+  const page = getManifest().homepage_url;
+  onInstalled.addListener(({reason, previousVersion}) => {
+    chrome.storage.local.get({
+      'faqs': true,
+      'last-update': 0
+    }, prefs => {
+      if (reason === 'install' || (prefs.faqs && reason === 'update')) {
+        const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
+        if (doUpdate && previousVersion !== version) {
+          chrome.tabs.create({
+            url: page + '?version=' + version +
+              (previousVersion ? '&p=' + previousVersion : '') +
+              '&type=' + reason,
+            active: reason === 'install'
+          });
+          chrome.storage.local.set({'last-update': Date.now()});
+        }
       }
     });
-  }
-});
-
-{
-  const {name, version} = chrome.runtime.getManifest();
-  chrome.runtime.setUninstallURL(
-    chrome.runtime.getManifest().homepage_url + '&rd=feedback&name=' + name + '&version=' + version
-  );
+  });
+  setUninstallURL(page + '?rd=feedback&name=' + encodeURIComponent(name) + '&version=' + version);
 }

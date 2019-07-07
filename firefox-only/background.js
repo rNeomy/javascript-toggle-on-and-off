@@ -1,9 +1,9 @@
 'use strict';
 
-var badge = false;
-var tab;
+let badge = false;
+let tab;
 
-var app = {
+const app = {
   title: title => {
     chrome.browserAction.setTitle({
       title
@@ -26,7 +26,7 @@ var app = {
   }
 };
 
-var refresh = () => chrome.storage.local.get({
+const refresh = () => chrome.storage.local.get({
   'refresh-enabled': true,
   'refresh-disabled': true,
   'state': true
@@ -41,9 +41,9 @@ var refresh = () => chrome.storage.local.get({
   tab = null;
 });
 
-var getHost = tab => tab.url.split('://')[1].split('/')[0];
+const getHost = tab => tab.url.split('://')[1].split('/')[0];
 
-var js = {
+const js = {
   whitelist: [],
   blacklist: [],
   whiteListen: d => {
@@ -89,7 +89,7 @@ var js = {
     );
     window.setTimeout(refresh, 10);
     app.icon();
-    app.title('Click to disable JavaScript');
+    app.title(chrome.i18n.getMessage('bg_disable'));
   },
   disable: () => {
     chrome.webRequest.onHeadersReceived.removeListener(js.blackListen);
@@ -106,7 +106,7 @@ var js = {
     );
     window.setTimeout(refresh, 10);
     app.icon('/n');
-    app.title('Click to enable JavaScript');
+    app.title(chrome.i18n.getMessage('bg_enable'));
   }
 };
 
@@ -137,7 +137,7 @@ chrome.storage.onChanged.addListener(prefs => {
   }
 });
 //
-var onClicked = t => {
+const onClicked = t => {
   tab = t;
   chrome.storage.local.get({
     state: true
@@ -190,7 +190,7 @@ if (chrome.contextMenus) {
   chrome.contextMenus.onClicked.addListener((info, t) => {
     if (info.menuItemId === 'open-test-page') {
       chrome.tabs.create({
-        url: 'http://tools.add0n.com/check-javascript.html?rand=' + Math.random()
+        url: 'https://webbrowsertools.com/javascript/?rand=' + Math.random()
       });
     }
     else if (info.menuItemId === 'open-settings') {
@@ -207,7 +207,7 @@ if (chrome.contextMenus) {
         js[type].push(hostname);
       }
       chrome.notifications.create({
-        title: 'JavaScript Toggle On and Off',
+        title: chrome.runtime.getManifest().name,
         type: 'basic',
         iconUrl: 'data/icons/48.png',
         message: index > -1 ? `"${hostname}" is removed from the ${type}` : `"${hostname}" is added to the ${type}`
@@ -222,36 +222,28 @@ if (chrome.contextMenus) {
   });
 }
 // FAQs & Feedback
-chrome.storage.local.get({
-  'version': null,
-  'faqs': navigator.userAgent.indexOf('Firefox') === -1,
-  'last-update': 0,
-}, prefs => {
-  const version = chrome.runtime.getManifest().version;
-
-  if (prefs.version ? (prefs.faqs && prefs.version !== version) : true) {
-    const now = Date.now();
-    const doUpdate = (now - prefs['last-update']) / 1000 / 60 / 60 / 24 > 30;
-    chrome.storage.local.set({
-      version,
-      'last-update': doUpdate ? Date.now() : prefs['last-update']
-    }, () => {
-      // do not display the FAQs page if last-update occurred less than 30 days ago.
-      if (doUpdate) {
-        const p = Boolean(prefs.version);
-        chrome.tabs.create({
-          url: chrome.runtime.getManifest().homepage_url + '&version=' + version +
-            '&type=' + (p ? ('upgrade&p=' + prefs.version) : 'install'),
-          active: p === false
-        });
+{
+  const {onInstalled, setUninstallURL, getManifest} = chrome.runtime;
+  const {name, version} = getManifest();
+  const page = getManifest().homepage_url;
+  onInstalled.addListener(({reason, previousVersion}) => {
+    chrome.storage.local.get({
+      'faqs': true,
+      'last-update': 0
+    }, prefs => {
+      if (reason === 'install' || (prefs.faqs && reason === 'update')) {
+        const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
+        if (doUpdate && previousVersion !== version) {
+          chrome.tabs.create({
+            url: page + '?version=' + version +
+              (previousVersion ? '&p=' + previousVersion : '') +
+              '&type=' + reason,
+            active: reason === 'install'
+          });
+          chrome.storage.local.set({'last-update': Date.now()});
+        }
       }
     });
-  }
-});
-
-{
-  const {name, version} = chrome.runtime.getManifest();
-  chrome.runtime.setUninstallURL(
-    chrome.runtime.getManifest().homepage_url + '&rd=feedback&name=' + name + '&version=' + version
-  );
+  });
+  setUninstallURL(page + '?rd=feedback&name=' + encodeURIComponent(name) + '&version=' + version);
 }
