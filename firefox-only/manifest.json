@@ -1,8 +1,7 @@
 {
   "name": "JavaScript Toggle On and Off",
   "description": "__MSG_app_description__",
-  "author": "Richard Neomy",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "manifest_version": 2,
   "default_locale": "en",
   "permissions": [
@@ -14,12 +13,7 @@
     "webRequestBlocking",
     "notifications"
   ],
-  "browser_action": {
-    "default_icon": {
-      "19": "data/icons/19.png",
-      "38": "data/icons/38.png"
-    }
-  },
+  "browser_action": {},
   "background": {
     "scripts": [
       "background.js"
@@ -28,8 +22,15 @@
   "homepage_url": "https://add0n.com/javascript-toggler.html",
   "icons": {
     "16": "data/icons/16.png",
+    "18": "data/icons/18.png",
+    "19": "data/icons/19.png",
+    "32": "data/icons/32.png",
+    "36": "data/icons/36.png",
+    "38": "data/icons/38.png",
     "48": "data/icons/48.png",
-    "128": "data/icons/128.png"
+    "64": "data/icons/64.png",
+    "128": "data/icons/128.png",
+    "256": "data/icons/256.png"
   },
   "options_ui": {
     "page": "data/options/index.html",
@@ -46,7 +47,7 @@
   "applications": {
     "gecko": {
       "id": "{479f0278-2c34-4365-b9f0-1d328d0f0a40}",
-      "strict_min_version": "52.0"
+      "strict_min_version": "57.0"
     }
   }
 }

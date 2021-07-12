@@ -1,0 +1,53 @@
+{
+  "app_description": {
+    "message": "Toggle JavaScript engines (inline, data URL, remote, and external) on and off the easy way"
+  },
+  "options_title": {
+    "message": "Options :: JavaScript Toggle On and Off"
+  },
+  "options_refresh_enabled": {
+    "message": "Refresh the current page when JavaScript is toggled to enabled"
+  },
+  "options_refresh_disabled": {
+    "message": "Refresh the current page when JavaScript is toggled to disabled"
+  },
+  "options_exception_list": {
+    "message": "Exception List"
+  },
+  "options_whitelist": {
+    "message": "(when JS is blocked) (Comma-separated list of domains to allow JS execution when it is globally blocked)"
+  },
+  "options_blacklist": {
+    "message": "(when JS is allowed) (Comma-separated list of domains to block JS execution when it is globally permitted)"
+  },
+  "options_reset": {
+    "message": "Factory Reset"
+  },
+  "options_support": {
+    "message": "Support Development"
+  },
+  "options_save": {
+    "message": "Save Options"
+  },
+  "options_private": {
+    "message": "Enable on Incognito"
+  },
+  "bg_disable": {
+    "message": "Click to disable JavaScript"
+  },
+  "bg_enable": {
+    "message": "Click to enable JavaScript"
+  },
+  "bg_warning": {
+    "message": "This extension only works on HTTP and HTTPS schemes"
+  },
+  "bg_add_to_whitelist": {
+    "message": "Exception List (when JS is blocked)"
+  },
+  "bg_add_to_blacklist": {
+    "message": "Exception List (when JS is allowed)"
+  },
+  "bg_test": {
+    "message": "Check JavaScript Execution"
+  }
+}

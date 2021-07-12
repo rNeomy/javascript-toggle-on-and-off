@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title data-i18n="options_title"></title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body>
+  <div class="tbl">
+    <input type="checkbox" id="refresh-enabled">
+    <label for="refresh-enabled" data-i18n="options_refresh_enabled"></label>
+    <input type="checkbox" id="refresh-disabled">
+    <label for="refresh-disabled" data-i18n="options_refresh_disabled"></label>
+  </div>
+
+  <p>
+    <label for="whitelist">
+      <a target="_blank" data-href="faq8" data-i18n="options_exception_list"></a> <span data-i18n="options_whitelist"></span>:
+    </label>
+    <textarea rows="4" id="whitelist"></textarea>
+  </p>
+
+  <p>
+    <label for="blacklist">
+      <a target="_blank" data-href="faq8" data-i18n="options_exception_list"></a> <span data-i18n="options_blacklist"></span>:
+    </label>
+    <textarea rows="4" id="blacklist"></textarea>
+  </p>
+
+  <p>
+    <button id="private" data-i18n="options_private"></button>
+    <button id="support" data-i18n="options_support"></button>
+  </p>
+  <p>
+    <button id="reset" data-i18n="options_reset"></button>
+    <button id="save" data-i18n="options_save"></button>
+    <span id="toast"></span>
+  </p>
+
+  <script src="index.js"></script>
+</body>
+</html>

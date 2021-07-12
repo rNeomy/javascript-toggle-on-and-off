@@ -2,6 +2,15 @@
 
 let tab;
 
+const translate = async id => {
+  const lang = navigator.language.split('-')[0];
+  translate.objects = translate.objects || await Promise.all([
+    fetch('_locales/' + lang + '/messages.json').then(r => r.json()).catch(() => ({})),
+    fetch('_locales/en/messages.json').then(r => r.json())
+  ]);
+  return translate.objects[0][id]?.message || translate.objects[1][id]?.message || id;
+};
+
 const notify = message => chrome.notifications.create({
   title: chrome.runtime.getManifest().name,
   type: 'basic',
@@ -9,28 +18,17 @@ const notify = message => chrome.notifications.create({
   message
 });
 
-const app = {
-  title: title => chrome.browserAction.setTitle({
+const icon = (state, title) => {
+  translate(title).then(title => chrome.action.setTitle({
     title
-  }),
-  icon: (path = '', badge) => {
-    chrome.browserAction.setIcon({
-      path: {
-        '16': 'data/icons' + path + '/16.png',
-        '19': 'data/icons' + path + '/19.png',
-        '32': 'data/icons' + path + '/32.png',
-        '38': 'data/icons' + path + '/38.png',
-        '48': 'data/icons' + path + '/48.png',
-        '64': 'data/icons' + path + '/64.png'
-      }
-    });
-    if (badge) {
-      chrome.browserAction.setBadgeText({
-        text: path ? 'd' : ''
-      });
-    }
-  }
-};
+  }));
+  chrome.action.setBadgeText({
+    text: state ? '' : '×'
+  });
+}
+chrome.action.setBadgeBackgroundColor({
+  color: '#666666'
+});
 
 const refresh = () => chrome.storage.local.get({
   'refresh-enabled': true,
@@ -47,9 +45,21 @@ const refresh = () => chrome.storage.local.get({
   tab = null;
 });
 
+async function image(url) {
+  const img = await createImageBitmap(await (await fetch(url)).blob());
+  const {width: w, height: h} = img;
+  const canvas = new OffscreenCanvas(w, h);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+
+  return ctx.getImageData(0, 0, w, h);
+}
+
 const js = {
   wildcard: host => `*://*.${host}/*`.replace(/\*\.\*/g, '*'),
-  enable: badge => {
+  enable() {
+    icon(true, 'bg_disable');
+
     chrome.contentSettings.javascript.clear({}, () => chrome.storage.local.get({
       blacklist: []
     }, prefs => {
@@ -57,12 +67,27 @@ const js = {
         primaryPattern: js.wildcard(host),
         setting: 'block'
       }));
-      window.setTimeout(refresh, 10);
+      chrome.declarativeContent.onPageChanged.removeRules(undefined, async () => {
+        const action = new chrome.declarativeContent.SetIcon({
+          imageData: {
+            16: await image('/data/icons/d/16.png'),
+            32: await image('/data/icons/d/32.png')
+          }
+        });
+        chrome.declarativeContent.onPageChanged.addRules([{
+          conditions: prefs.blacklist.map(host => new chrome.declarativeContent.PageStateMatcher({
+            pageUrl: {
+              hostSuffix: host
+            }
+          })),
+          actions: [action]
+        }]);
+      });
+      setTimeout(refresh, 10);
     }));
-    app.icon('', badge);
-    app.title(chrome.i18n.getMessage('bg_disable'));
   },
-  disable: badge => {
+  disable() {
+    icon(false, 'bg_enable');
     chrome.contentSettings.javascript.clear({}, () => {
       chrome.contentSettings.javascript.set({
         primaryPattern: '<all_urls>',
@@ -75,20 +100,34 @@ const js = {
           primaryPattern: js.wildcard(host),
           setting: 'allow'
         }));
-        window.setTimeout(refresh, 10);
+        chrome.declarativeContent.onPageChanged.removeRules(undefined, async () => {
+          const action = new chrome.declarativeContent.SetIcon({
+            imageData: {
+              16: await image('/data/icons/a/16.png'),
+              32: await image('/data/icons/a/32.png')
+            }
+          });
+          chrome.declarativeContent.onPageChanged.addRules([{
+            conditions: prefs.whitelist.map(host => new chrome.declarativeContent.PageStateMatcher({
+              pageUrl: {
+                hostSuffix: host
+              }
+            })),
+            actions: [action]
+          }]);
+        });
+
+        setTimeout(refresh, 10);
       });
     });
-    app.icon('/n', badge);
-    app.title(chrome.i18n.getMessage('bg_enable'));
   }
 };
 
 function init() {
   chrome.storage.local.get({
-    state: true,
-    badge: false
+    state: true
   }, prefs => {
-    js[prefs.state ? 'enable' : 'disable'](prefs.badge);
+    js[prefs.state ? 'enable' : 'disable']();
   });
 }
 init();
@@ -105,7 +144,7 @@ chrome.storage.onChanged.addListener(prefs => {
   }
 });
 //
-chrome.browserAction.onClicked.addListener(t => {
+chrome.action.onClicked.addListener(t => {
   tab = t;
   chrome.storage.local.get({
     state: true
@@ -116,22 +155,22 @@ chrome.browserAction.onClicked.addListener(t => {
 });
 //
 {
-  const onStartup = () => {
+  const onStartup = async () => {
     chrome.contextMenus.create({
       id: 'open-test-page',
-      title: 'Check JavaScript execution',
-      contexts: ['browser_action']
+      title: await translate('bg_test'),
+      contexts: ['action']
     });
     chrome.contextMenus.create({
       id: 'whitelist-toggle',
-      title: 'Add to or remove from whitelist',
-      contexts: ['browser_action'],
+      title: await translate('bg_add_to_whitelist'),
+      contexts: ['action'],
       documentUrlPatterns: ['http://*/*', 'https://*/*']
     });
     chrome.contextMenus.create({
       id: 'blacklist-toggle',
-      title: 'Add to or remove from blacklist',
-      contexts: ['browser_action'],
+      title: await translate('bg_add_to_blacklist'),
+      contexts: ['action'],
       documentUrlPatterns: ['http://*/*', 'https://*/*']
     });
   };
@@ -165,7 +204,7 @@ chrome.contextMenus.onClicked.addListener((info, t) => {
       });
     }
     else {
-      notify(chrome.i18n.getMessage('bg_warning'));
+      translate('bg_warning').then(notify);
     }
   }
 });
@@ -184,10 +223,11 @@ chrome.contextMenus.onClicked.addListener((info, t) => {
         if (reason === 'install' || (prefs.faqs && reason === 'update')) {
           const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
           if (doUpdate && previousVersion !== version) {
-            tabs.create({
+            tabs.query({active: true, currentWindow: true}, tbs => tabs.create({
               url: page + '?version=' + version + (previousVersion ? '&p=' + previousVersion : '') + '&type=' + reason,
-              active: reason === 'install'
-            });
+              active: reason === 'install',
+              ...(tbs && tbs.length && {index: tbs[0].index + 1})
+            }));
             storage.local.set({'last-update': Date.now()});
           }
         }
