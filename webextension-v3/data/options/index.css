@@ -31,11 +31,16 @@ textarea {
 }
 a,
 a:visited {
-  color: ##0077cc;
+  color: #0077cc;
   text-decoration: none;
 }
 .tbl {
   display: grid;
-  grid-template-columns: min-content 1fr;
+  grid-template-columns: 1fr min-content;
   grid-gap: 10px 5px;
+  align-items: center;
+}
+.tbl input {
+  justify-self: end;
+  align-self: start;
 }

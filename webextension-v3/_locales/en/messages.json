@@ -32,6 +32,9 @@
   "options_private": {
     "message": "Enable on Incognito"
   },
+  "options_badge_color": {
+    "message": "Color of the badge icon when JS is disabled"
+  },
   "bg_disable": {
     "message": "Click to disable JavaScript"
   },

@@ -23,12 +23,19 @@ const icon = (state, title) => {
     title
   }));
   chrome.action.setBadgeText({
-    text: state ? '' : '×'
+    text: state ? '' : 'd'
   });
+};
+
+{
+  const run = () => chrome.storage.local.get({
+    'badge-color': '#da4537'
+  }, prefs => chrome.action.setBadgeBackgroundColor({
+    color: prefs['badge-color']
+  }));
+  chrome.runtime.onStartup.addListener(run);
+  chrome.runtime.onInstalled.addListener(run);
 }
-chrome.action.setBadgeBackgroundColor({
-  color: '#666666'
-});
 
 const refresh = () => chrome.storage.local.get({
   'refresh-enabled': true,
@@ -141,6 +148,11 @@ chrome.storage.onChanged.addListener(prefs => {
   }
   if (prefs.blacklist && !prefs.state) {
     init();
+  }
+  if (prefs['badge-color']) {
+    chrome.action.setBadgeBackgroundColor({
+      color: prefs['badge-color'].newValue
+    });
   }
 });
 //

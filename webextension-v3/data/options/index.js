@@ -12,12 +12,14 @@ function restore() {
     'whitelist': [],
     'blacklist': [],
     'refresh-enabled': true,
-    'refresh-disabled': true
+    'refresh-disabled': true,
+    'badge-color': '#da4537'
   }, prefs => {
     document.getElementById('whitelist').value = prefs.whitelist.join(', ');
     document.getElementById('blacklist').value = prefs.blacklist.join(', ');
     document.getElementById('refresh-enabled').checked = prefs['refresh-enabled'];
     document.getElementById('refresh-disabled').checked = prefs['refresh-disabled'];
+    document.getElementById('badge-color').value = prefs['badge-color'];
   });
 }
 function save() {
@@ -35,7 +37,8 @@ function save() {
     whitelist,
     blacklist,
     'refresh-enabled': document.getElementById('refresh-enabled').checked,
-    'refresh-disabled': document.getElementById('refresh-disabled').checked
+    'refresh-disabled': document.getElementById('refresh-disabled').checked,
+    'badge-color': document.getElementById('badge-color').value
   }, () => {
     restore();
     toast.textContent = 'Options saved.';
