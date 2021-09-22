@@ -1,0 +1,41 @@
+{
+  "app_description": {
+    "message": "Schakel eenvoudig tussen javascript-aandrijvingen (ingebouwd, gegevensurl, op afstand en extern)"
+  },
+  "options_title": {
+    "message": "Opties :: javascript-schakelaar aan/uit"
+  },
+  "options_refresh_enabled": {
+    "message": "Huidige pagina verversen als javascript-aandrijving wordt ingesteld op \'Ingeschakeld\'"
+  },
+  "options_refresh_disabled": {
+    "message": "Huidige pagina verversen als javascript-aandrijving wordt ingesteld op \'Uitgeschakeld\'"
+  },
+  "options_badge": {
+    "message": "Embleem \'d\' tonen op werkbalkknop als javascript is uitgeschakeld (om de statussen gemakkelijk te herkennen)"
+  },
+  "options_whitelist": {
+    "message": "Witte lijst (kommagescheiden lijst met domeinen waarop js toegestaan is (als de schakelaar op \'Uitgeschakeld\' staat):"
+  },
+  "options_blacklist": {
+    "message": "Zwarte lijst (kommagescheiden lijst met domeinen waarop js toegestaan is (als de schakelaar op \'Ingeschakeld\' staat):"
+  },
+  "options_reset": {
+    "message": "Standaardwaarden"
+  },
+  "options_support": {
+    "message": "Ondersteun de ontwikkeling"
+  },
+  "options_save": {
+    "message": "Opslaan"
+  },
+  "bg_disable": {
+    "message": "Klik om javascript uit te schakelen"
+  },
+  "bg_enable": {
+    "message": "Klik om javascript in te schakelen"
+  },
+  "bg_warning": {
+    "message": "Deze extensie werkt alleen op http- en https-pagina\'\s"
+  }
+}
