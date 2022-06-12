@@ -1,7 +1,7 @@
 {
   "name": "JavaScript Toggle On and Off",
   "description": "__MSG_app_description__",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "manifest_version": 3,
   "default_locale": "en",
   "permissions": [
@@ -29,8 +29,6 @@
     "page": "data/options/index.html"
   },
   "commands": {
-    "_execute_action": {
-      "description": "Press the action button"
-    }
+    "_execute_action": {}
   }
 }

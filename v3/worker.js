@@ -2,14 +2,7 @@
 
 let tab;
 
-const translate = async id => {
-  const lang = navigator.language.split('-')[0];
-  translate.objects = translate.objects || await Promise.all([
-    fetch('_locales/' + lang + '/messages.json').then(r => r.json()).catch(() => ({})),
-    fetch('_locales/en/messages.json').then(r => r.json())
-  ]);
-  return translate.objects[0][id]?.message || translate.objects[1][id]?.message || id;
-};
+const translate = id => chrome.i18n.getMessage(id) || id;
 
 const notify = message => chrome.notifications.create({
   title: chrome.runtime.getManifest().name,
@@ -19,9 +12,9 @@ const notify = message => chrome.notifications.create({
 });
 
 const icon = (state, title) => {
-  translate(title).then(title => chrome.action.setTitle({
-    title
-  }));
+  chrome.action.setTitle({
+    title: translate(title)
+  });
   chrome.action.setBadgeText({
     text: state ? '' : 'd'
   });
@@ -167,21 +160,21 @@ chrome.action.onClicked.addListener(t => {
 });
 //
 {
-  const onStartup = async () => {
+  const onStartup = () => {
     chrome.contextMenus.create({
       id: 'open-test-page',
-      title: await translate('bg_test'),
+      title: translate('bg_test'),
       contexts: ['action']
     });
     chrome.contextMenus.create({
       id: 'whitelist-toggle',
-      title: await translate('bg_add_to_whitelist'),
+      title: translate('bg_add_to_whitelist'),
       contexts: ['action'],
       documentUrlPatterns: ['http://*/*', 'https://*/*']
     });
     chrome.contextMenus.create({
       id: 'blacklist-toggle',
-      title: await translate('bg_add_to_blacklist'),
+      title: translate('bg_add_to_blacklist'),
       contexts: ['action'],
       documentUrlPatterns: ['http://*/*', 'https://*/*']
     });
@@ -216,7 +209,7 @@ chrome.contextMenus.onClicked.addListener((info, t) => {
       });
     }
     else {
-      translate('bg_warning').then(notify);
+      notify(translate('bg_warning'));
     }
   }
 });
