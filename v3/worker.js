@@ -1,7 +1,5 @@
 'use strict';
 
-let tab;
-
 const translate = id => chrome.i18n.getMessage(id) || id;
 
 const notify = message => chrome.notifications.create({
@@ -35,14 +33,23 @@ const refresh = () => chrome.storage.local.get({
   'refresh-disabled': true,
   'state': true
 }, prefs => {
-  if (tab && tab.url && tab.url.startsWith('http')) {
-    if ((prefs.state && prefs['refresh-enabled']) || (prefs.state === false && prefs['refresh-disabled'])) {
-      chrome.tabs.reload(tab.id, {
-        bypassCache: true
-      });
-    }
+  const clear = () => chrome.storage.session.remove('tabId');
+
+  if ((prefs.state && prefs['refresh-enabled']) || (prefs.state === false && prefs['refresh-disabled'])) {
+    chrome.storage.session.get({
+      tabId: -1
+    }, prefs => {
+      clear();
+      if (prefs.tabId !== -1) {
+        chrome.tabs.reload(prefs.tabId, {
+          bypassCache: true
+        });
+      }
+    });
   }
-  tab = null;
+  else {
+    clear();
+  }
 });
 
 async function image(url) {
@@ -150,13 +157,14 @@ chrome.storage.onChanged.addListener(prefs => {
 });
 //
 chrome.action.onClicked.addListener(t => {
-  tab = t;
-  chrome.storage.local.get({
+  chrome.storage.session.set({
+    tabId: t.url && t.url.startsWith('http') ? t.id : -1
+  }, () => chrome.storage.local.get({
     state: true
   }, prefs => {
     prefs.state = !prefs.state;
     chrome.storage.local.set(prefs);
-  });
+  }));
 });
 //
 {
@@ -204,8 +212,9 @@ chrome.contextMenus.onClicked.addListener((info, t) => {
           prefs[type].push(hostname);
         }
         notify(index > -1 ? `"${hostname}" is removed from the ${type}` : `"${hostname}" is added to the ${type}`);
-        tab = t;
-        chrome.storage.local.set(prefs);
+        chrome.storage.session.set({
+          tabId: t.id
+        }, () => chrome.storage.local.set(prefs));
       });
     }
     else {
