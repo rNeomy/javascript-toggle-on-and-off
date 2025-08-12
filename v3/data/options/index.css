@@ -1,13 +1,15 @@
 body {
-  font-size: 13px;
+  font-size: 14px;
   font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
   background-color: #fff;
   color: #4d5156;
+  width: min(100% - 2rem, 70rem);
+  margin-inline: auto;
 }
 button,
 input[type=submit],
 input[type=button] {
-  height: 24px;
+  height: 28px;
   color: #444;
   background-image: linear-gradient(rgb(237, 237, 237), rgb(237, 237, 237) 38%, rgb(222, 222, 222));
   box-shadow: rgba(0, 0, 0, 0.08) 0 1px 0, rgba(255, 255, 255, 0.75) 0 1px 2px inset;
@@ -31,7 +33,7 @@ textarea {
 }
 a,
 a:visited {
-  color: #0077cc;
+  color: #07c;
   text-decoration: none;
 }
 .tbl {

@@ -7,7 +7,7 @@ const notify = message => chrome.notifications.create({
   type: 'basic',
   iconUrl: 'data/icons/48.png',
   message
-});
+}, id => setTimeout(chrome.notifications.clear, 3000, id));
 
 const icon = (state, title) => {
   chrome.action.setTitle({
@@ -169,6 +169,11 @@ chrome.action.onClicked.addListener(t => {
 //
 {
   const onStartup = () => {
+    if (onStartup.once) {
+      return;
+    }
+    onStartup.once = true;
+
     chrome.contextMenus.create({
       id: 'open-test-page',
       title: translate('bg_test'),
@@ -227,8 +232,7 @@ chrome.contextMenus.onClicked.addListener((info, t) => {
 {
   const {management, runtime: {onInstalled, setUninstallURL, getManifest}, storage, tabs} = chrome;
   if (navigator.webdriver !== true) {
-    const page = getManifest().homepage_url;
-    const {name, version} = getManifest();
+    const {homepage_url: page, name, version} = getManifest();
     onInstalled.addListener(({reason, previousVersion}) => {
       management.getSelf(({installType}) => installType === 'normal' && storage.local.get({
         'faqs': true,
@@ -237,7 +241,7 @@ chrome.contextMenus.onClicked.addListener((info, t) => {
         if (reason === 'install' || (prefs.faqs && reason === 'update')) {
           const doUpdate = (Date.now() - prefs['last-update']) / 1000 / 60 / 60 / 24 > 45;
           if (doUpdate && previousVersion !== version) {
-            tabs.query({active: true, currentWindow: true}, tbs => tabs.create({
+            tabs.query({active: true, lastFocusedWindow: true}, tbs => tabs.create({
               url: page + '?version=' + version + (previousVersion ? '&p=' + previousVersion : '') + '&type=' + reason,
               active: reason === 'install',
               ...(tbs && tbs.length && {index: tbs[0].index + 1})
